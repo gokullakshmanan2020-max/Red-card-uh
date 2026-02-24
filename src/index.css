@@ -5,16 +5,41 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-dot: "DotGothic16", monospace;
   
-  --color-nothing-bg: #000000;
-  --color-nothing-surface: #1A1A1A;
-  --color-nothing-accent: #FF0000;
-  --color-nothing-text: #FFFFFF;
-  --color-nothing-muted: #888888;
+  --color-nothing-bg: var(--bg);
+  --color-nothing-surface: var(--surface);
+  --color-nothing-accent: var(--accent);
+  --color-nothing-text: var(--text);
+  --color-nothing-muted: var(--muted);
 }
+
+:root {
+  --bg: #000000;
+  --surface: #1A1A1A;
+  --text: #FFFFFF;
+  --muted: #888888;
+  --accent: #FF0000;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-specular: rgba(255, 255, 255, 0.05);
+}
+
+.light {
+  --bg: #F5F5F5;
+  --surface: #FFFFFF;
+  --text: #000000;
+  --muted: #666666;
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --glass-specular: rgba(0, 0, 0, 0.02);
+}
+
+.theme-red { --accent: #FF0000; }
+.theme-blue { --accent: #007AFF; }
+.theme-green { --accent: #34C759; }
+.theme-amber { --accent: #FF9500; }
+.theme-violet { --accent: #AF52DE; }
 
 @layer base {
   body {
-    @apply bg-nothing-bg text-nothing-text font-sans antialiased overflow-x-hidden;
+    @apply bg-nothing-bg text-nothing-text font-sans antialiased overflow-x-hidden transition-colors duration-500;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -23,17 +48,49 @@
 }
 
 .glass-heavy {
-  @apply bg-nothing-surface/30 backdrop-blur-[80px] border border-white/10 shadow-2xl;
+  @apply bg-nothing-surface/10 backdrop-blur-[100px] border shadow-2xl;
+  backdrop-filter: blur(100px) saturate(180%) contrast(90%);
+  border-color: var(--glass-border);
   border-radius: 2.5rem;
   position: relative;
   overflow: hidden;
+  transition: backdrop-filter 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease, border-color 0.5s ease;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .glass-heavy::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+  background: linear-gradient(
+    165deg, 
+    var(--glass-specular) 0%, 
+    transparent 40%, 
+    rgba(255, 255, 255, 0.01) 70%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+.glass-heavy::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid transparent;
+  background: linear-gradient(
+    135deg, 
+    rgba(255, 255, 255, 0.2) 0%, 
+    transparent 30%, 
+    transparent 70%, 
+    rgba(255, 255, 255, 0.1) 100%
+  ) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
   pointer-events: none;
 }
 
@@ -45,8 +102,9 @@
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000000 100%);
+  background: radial-gradient(circle at 50% 50%, var(--surface) 0%, var(--bg) 100%);
   overflow: hidden;
+  transition: background 0.5s ease;
 }
 
 .liquid-bg::after {
@@ -54,77 +112,80 @@
   position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.05;
+  opacity: 0.03;
   mix-blend-mode: overlay;
   pointer-events: none;
 }
 
 .liquid-blob {
   position: absolute;
-  filter: blur(120px);
-  opacity: 0.35;
+  filter: blur(100px) saturate(150%) contrast(110%);
+  opacity: 0.25;
   border-radius: 50%;
   mix-blend-mode: screen;
   will-change: transform, border-radius;
+  transition: opacity 0.5s ease;
+}
+
+.light .liquid-blob {
+  mix-blend-mode: multiply;
+  opacity: 0.1;
 }
 
 .blob-1 {
-  width: 90vw;
-  height: 90vw;
-  background: radial-gradient(circle, rgba(255, 0, 0, 0.18) 0%, transparent 75%);
-  top: -25%;
-  left: -20%;
-  animation: morph 30s infinite alternate ease-in-out;
+  width: 110vw;
+  height: 110vw;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent), transparent 88%) 0%, transparent 70%);
+  top: -35%;
+  left: -30%;
+  animation: fluid-1 50s infinite cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .blob-2 {
-  width: 70vw;
-  height: 70vw;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, transparent 75%);
-  bottom: -15%;
-  right: -10%;
-  animation: morph 25s infinite alternate-reverse ease-in-out;
+  width: 90vw;
+  height: 90vw;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+  bottom: -25%;
+  right: -20%;
+  animation: fluid-2 45s infinite cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .blob-3 {
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(circle, rgba(255, 0, 0, 0.12) 0%, transparent 75%);
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent), transparent 92%) 0%, transparent 70%);
   top: 35%;
   right: 15%;
-  animation: morph 20s infinite alternate ease-in-out;
+  animation: fluid-3 40s infinite cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes morph {
-  0% { 
-    transform: translate(0, 0) rotate(0deg) scale(1); 
-    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; 
-  }
-  25% {
-    transform: translate(5%, 10%) rotate(90deg) scale(1.05);
-    border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%;
-  }
-  50% { 
-    transform: translate(10%, 5%) rotate(180deg) scale(1.1); 
-    border-radius: 60% 40% 30% 70% / 50% 60% 40% 60%; 
-  }
-  75% {
-    transform: translate(-5%, 12%) rotate(270deg) scale(0.95);
-    border-radius: 40% 60% 50% 50% / 50% 50% 40% 60%;
-  }
-  100% { 
-    transform: translate(0, 0) rotate(360deg) scale(1); 
-    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; 
-  }
+@keyframes fluid-1 {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  33% { transform: translate(10%, 5%) scale(1.1) rotate(120deg); border-radius: 60% 40% 30% 70% / 50% 60% 40% 60%; }
+  66% { transform: translate(-5%, 12%) scale(0.9) rotate(240deg); border-radius: 30% 70% 70% 30% / 60% 40% 60% 40%; }
+}
+
+@keyframes fluid-2 {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); border-radius: 50% 50% 30% 70% / 50% 60% 40% 60%; }
+  50% { transform: translate(-10%, -5%) scale(1.1) rotate(-180deg); border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+}
+
+@keyframes fluid-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); border-radius: 30% 70% 70% 30% / 50% 50% 50% 50%; }
+  50% { transform: translate(15%, 10%) scale(1.2); border-radius: 50% 50% 50% 50% / 70% 30% 30% 70%; }
 }
 
 .dynamic-island {
-  @apply bg-black/60 backdrop-blur-[80px] text-white rounded-full px-6 py-2 flex items-center gap-3 shadow-2xl border border-white/10;
+  @apply bg-black/40 backdrop-blur-[100px] text-white rounded-full px-6 py-2 flex items-center gap-3 shadow-2xl border border-white/10;
+  backdrop-filter: blur(100px) saturate(180%) contrast(90%);
+  box-shadow: 
+    0 10px 30px -5px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 .red-screen-depth {
   @apply fixed inset-0 z-50 flex items-center justify-center;
-  background: radial-gradient(circle at center, #FF0000 0%, #660000 100%);
+  background: radial-gradient(circle at center, var(--accent) 0%, color-mix(in srgb, var(--accent), black 60%) 100%);
 }
 
 /* Custom scrollbar for brutalist look */
